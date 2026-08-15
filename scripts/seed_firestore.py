@@ -1,11 +1,9 @@
-"""Seed script for Firestore motorcycle rentals collection.
+"""Seed script for Firestore motorcycle rentals collection."""
 
-Hardcoded Project ID: 'qwiklabs-gcp-04-44a01d976633'
-"""
-
+import os
 from google.cloud import firestore
 
-PROJECT_ID = "qwiklabs-gcp-04-44a01d976633"
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "bikram-java")
 COLLECTION_NAME = "motorcycle_rentals"
 
 SEED_ITEMS = [
