@@ -22,7 +22,10 @@ from google.adk.agents.callback_context import CallbackContext
 from google.adk.apps import App
 from google.adk.code_executors import AgentEngineSandboxCodeExecutor
 from google.adk.models import Gemini
+from google.adk.tools.preload_memory_tool import PreloadMemoryTool
 from google.genai import types
+
+from app.app_utils.services import get_memory_service
 
 
 def _resolve_reasoning_engine_resource() -> str:
@@ -42,8 +45,10 @@ MODEL = "gemini-3.7-flash"
 
 
 async def generate_memories_callback(callback_context: CallbackContext):
-    """Callback to extract and save facts to Vertex AI Memory Bank after each turn."""
-    await callback_context.add_session_to_memory()
+    try:
+        await callback_context.add_session_to_memory()
+    except Exception:
+        pass
     return None
 
 
@@ -85,7 +90,8 @@ root_agent = Agent(
         "- get_scenic_route_highlights: route mileage, waypoints, difficulty for known routes\n"
         "- generate_destination_image: generate a scenic postcard image for an itinerary stop\n"
         "- generate_domain_item_image: photo-realistic image of a motorcycle, landmark, or travel item\n"
-        "\n"
+        "- PreloadMemoryTool: call this at the start of every session to recall the user's stated preferences, "
+        "budget, and riding experience from past conversations.\n"
     ),
     code_executor=AgentEngineSandboxCodeExecutor(
         agent_engine_resource_name=REASONING_ENGINE_RESOURCE
@@ -99,10 +105,13 @@ root_agent = Agent(
         calculate_trip_budget,
         get_scenic_route_highlights,
         generate_destination_image,
+        PreloadMemoryTool(),
     ],
+    after_agent_callback=generate_memories_callback,
 )
 
 app = App(
     root_agent=root_agent,
     name="app",
+    memory_service=get_memory_service(),
 )
