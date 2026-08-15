@@ -107,10 +107,10 @@ async def _get_card(client: httpx.AsyncClient) -> AgentCard:
     if _card is None:
         resp = await client.get(A2A_CARD_URL)
         resp.raise_for_status()
-        card = AgentCard(**resp.json())
-        # Agent Runtime does not serve a public card URL, so point the client at
-        # the passthrough base for message sends.
-        card.url = A2A_BASE
+        data = resp.json()
+        data.setdefault("url", A2A_BASE)  # Agent Runtime omits url; inject before validation
+        card = AgentCard(**data)
+        card.url = A2A_BASE  # point at passthrough base for message sends
         _card = card
     return _card
 

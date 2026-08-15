@@ -19,7 +19,7 @@ from google.genai import types
 if TYPE_CHECKING:
     from google.adk.agents.callback_context import CallbackContext
 
-_CLASSIFIER_MODEL = "gemini-2.0-flash-lite"
+_CLASSIFIER_MODEL = "gemini-2.0-flash"
 
 _ALLOWED_TOPICS = (
     "US travel planning, road trips, motorcycle routes, national parks, "
@@ -100,12 +100,16 @@ async def topic_guard_callback(callback_context: CallbackContext) -> types.Conte
         return _refusal(_INJECTION_REFUSAL_TEXT)
 
     project = os.environ.get("GOOGLE_CLOUD_PROJECT", "bikram-java")
-    client = genai.Client(vertexai=True, project=project, location="global")
+    location = os.environ.get("GOOGLE_CLOUD_REGION", "us-east1")
+    client = genai.Client(vertexai=True, project=project, location=location)
 
-    response = await client.aio.models.generate_content(
-        model=_CLASSIFIER_MODEL,
-        contents=_CLASSIFY_PROMPT.format(topics=_ALLOWED_TOPICS, message=user_text),
-    )
+    try:
+        response = await client.aio.models.generate_content(
+            model=_CLASSIFIER_MODEL,
+            contents=_CLASSIFY_PROMPT.format(topics=_ALLOWED_TOPICS, message=user_text),
+        )
+    except Exception:
+        return None
 
     verdict = (response.text or "").strip().upper()
     if verdict.startswith("YES"):
