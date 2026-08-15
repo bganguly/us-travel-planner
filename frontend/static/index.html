@@ -207,7 +207,7 @@ function renderReply(b, parts) {
     "- Off-topic questions are outside my scope",
     "",
     "What would you like to plan?"
-  ].join("\\n");
+  ].join("\n");
   if (window.marked && typeof window.marked.parse === "function") {
     b.innerHTML = window.marked.parse(msg);
   } else {
