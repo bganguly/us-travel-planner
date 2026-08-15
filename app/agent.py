@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
 import json
 import os
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from google.adk.agents import Agent
 from google.adk.agents.callback_context import CallbackContext
@@ -41,40 +39,7 @@ def _resolve_reasoning_engine_resource() -> str:
 REASONING_ENGINE_RESOURCE = _resolve_reasoning_engine_resource()
 
 
-MODEL = "gemini-3.6-flash"
-
-
-def get_weather(query: str) -> str:
-    """Simulates a web search. Use it get information on weather.
-
-    Args:
-        query: A string containing the location to get weather information for.
-
-    Returns:
-        A string with the simulated weather information for the queried location.
-    """
-    if "sf" in query.lower() or "san francisco" in query.lower():
-        return "It's 60 degrees and foggy."
-    return "It's 90 degrees and sunny."
-
-
-def get_current_time(query: str) -> str:
-    """Simulates getting the current time for a city.
-
-    Args:
-        city: The name of the city to get the current time for.
-
-    Returns:
-        A string with the current time information.
-    """
-    if "sf" in query.lower() or "san francisco" in query.lower():
-        tz_identifier = "America/Los_Angeles"
-    else:
-        return f"Sorry, I don't have timezone information for query: {query}."
-
-    tz = ZoneInfo(tz_identifier)
-    now = datetime.datetime.now(tz)
-    return f"The current time for query {query} is {now.strftime('%Y-%m-%d %H:%M:%S %Z%z')}"
+MODEL = "gemini-3.7-flash"
 
 
 async def generate_memories_callback(callback_context: CallbackContext):
@@ -104,27 +69,30 @@ root_agent = Agent(
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=(
-        "You are a helpful travel planning AI assistant designed to help users plan "
-        "US vacations, road trips, and motorcycle routes with local bike rentals "
-        "(such as Utah's Scenic Byway 12, Zion, Bryce Canyon, and Grand Canyon). "
+        "You are a travel planning AI assistant for US road trips and motorcycle routes "
+        "(Utah Scenic Byway 12, Zion, Bryce Canyon, Grand Canyon). "
         "Standard trip duration is 7 days unless specified otherwise. "
-        "You can run Python code safely in a sandbox using your code execution capabilities. "
-        "Use your tools: "
-        "- generate_domain_item_image to generate photo images of motorcycles, travel items, landmarks, or scenery using gemini-3.1-flash-lite-image "
-        "- consult_travel_instructions to look up speed limits, allowed travel hours, and guidelines "
-        "- list_motorcycle_rentals, get_motorcycle_rental, add_or_update_motorcycle_rental for rental lookups and updates "
-        "- calculate_trip_budget to provide itemized trip cost breakdowns "
-        "- get_scenic_route_highlights for route mileage and waypoint recommendations "
-        "- generate_destination_image to generate scenic postcard graphics for itinerary stops. "
-        "You remember stated preferences, budget, riding experience, "
-        "and facts from previous conversations and use them to personalize your responses."
+        "\n\n"
+        "IMPORTANT: You must ONLY answer from the data your tools return. "
+        "Do not use your training knowledge to answer any question. "
+        "If none of your tools can supply the answer, respond: "
+        "'I don't have that information in this system.' "
+        "\n\n"
+        "Your tools and when to use them:\n"
+        "- consult_travel_instructions: speed limits, travel hours, rules, guidelines — call this FIRST for any factual travel question\n"
+        "- list_motorcycle_rentals / get_motorcycle_rental / add_or_update_motorcycle_rental: rental inventory and updates\n"
+        "- calculate_trip_budget: itemized cost breakdowns (call with days, daily_rental_rate, total_miles)\n"
+        "- get_scenic_route_highlights: route mileage, waypoints, difficulty for known routes\n"
+        "- generate_destination_image: generate a scenic postcard image for an itinerary stop\n"
+        "- generate_domain_item_image: photo-realistic image of a motorcycle, landmark, or travel item\n"
+        "\n"
+        "Use PreloadMemoryTool at the start of every session to recall the user's stated preferences, "
+        "budget, and riding experience from past conversations."
     ),
     code_executor=AgentEngineSandboxCodeExecutor(
         agent_engine_resource_name=REASONING_ENGINE_RESOURCE
     ) if REASONING_ENGINE_RESOURCE else None,
     tools=[
-        get_weather,
-        get_current_time,
         generate_domain_item_image,
         consult_travel_instructions,
         list_motorcycle_rentals,
