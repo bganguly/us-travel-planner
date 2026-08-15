@@ -195,19 +195,10 @@ function renderReply(b, parts) {
   const b = bubble("agent");
   const msg = [
     "**Welcome! I'm your US Road Trip & Motorcycle Route Planner.**",
-    "",
-    "I can help with:",
-    "- Scenic routes: Utah Byway 12, Zion, Bryce Canyon, Grand Canyon, Route 66",
-    "- Motorcycle rental info, trip budgets, and route difficulty",
-    "- Travel rules and guidelines for each destination",
-    "",
-    "**Heads-up:**",
-    "- I answer only from my travel database — not general knowledge",
-    "- Inline image generation is currently limited (preview model, restricted quota)",
-    "- Off-topic questions are outside my scope",
-    "",
+    "I help with scenic routes (Utah Byway 12, Zion, Bryce Canyon, Grand Canyon, Route 66), motorcycle rentals, trip budgets, and travel rules.",
+    "*Answers from travel database only · destination photos may not load for all stops · off-topic out of scope*",
     "What would you like to plan?"
-  ].join("\n");
+  ].join("  \n");
   if (window.marked && typeof window.marked.parse === "function") {
     b.innerHTML = window.marked.parse(msg);
   } else {
