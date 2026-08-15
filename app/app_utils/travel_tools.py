@@ -186,40 +186,43 @@ def generate_destination_image(destination_name: str, caption: str = "") -> dict
     """
     from google import genai
 
-    client = genai.Client(vertexai=True, project=PROJECT_ID, location="global")
-    prompt = f"A professional high-resolution photograph of {destination_name}. {caption or 'Scenic motorcycle travel road trip destination with stunning natural landscapes and scenic vistas.'}"
+    try:
+        client = genai.Client(vertexai=True, project=PROJECT_ID, location="global")
+        prompt = f"A professional high-resolution photograph of {destination_name}. {caption or 'Scenic motorcycle travel road trip destination with stunning natural landscapes and scenic vistas.'}"
 
-    response = client.models.generate_content(
-        model="gemini-3.1-flash-lite-image",
-        contents=prompt,
-    )
+        response = client.models.generate_content(
+            model="gemini-3.1-flash-lite-image",
+            contents=prompt,
+        )
 
-    image_bytes = None
-    for candidate in response.candidates or []:
-        for part in candidate.content.parts or []:
-            if part.inline_data and part.inline_data.data:
-                image_bytes = part.inline_data.data
+        image_bytes = None
+        for candidate in response.candidates or []:
+            for part in candidate.content.parts or []:
+                if part.inline_data and part.inline_data.data:
+                    image_bytes = part.inline_data.data
+                    break
+            if image_bytes:
                 break
-        if image_bytes:
-            break
 
-    if not image_bytes:
-        return {"status": "error", "message": f"Failed to generate photo for {destination_name}"}
+        if not image_bytes:
+            return {"status": "error", "message": f"Failed to generate photo for {destination_name}"}
 
-    slug = re.sub(r"[^a-zA-Z0-9_]", "_", destination_name.lower().strip())
-    filename = f"postcards/{slug}_postcard.jpg"
+        slug = re.sub(r"[^a-zA-Z0-9_]", "_", destination_name.lower().strip())
+        filename = f"postcards/{slug}_postcard.jpg"
 
-    storage_client = storage.Client(project=PROJECT_ID)
-    bucket = storage_client.bucket(BUCKET_NAME)
-    blob = bucket.blob(filename)
-    blob.upload_from_string(image_bytes, content_type="image/jpeg")
+        storage_client = storage.Client(project=PROJECT_ID)
+        bucket = storage_client.bucket(BUCKET_NAME)
+        blob = bucket.blob(filename)
+        blob.upload_from_string(image_bytes, content_type="image/jpeg")
 
-    public_url = f"https://storage.googleapis.com/{BUCKET_NAME}/{filename}"
-    markdown_embed = f"![{destination_name}]({public_url})"
+        public_url = f"https://storage.googleapis.com/{BUCKET_NAME}/{filename}"
+        markdown_embed = f"![{destination_name}]({public_url})"
 
-    return {
-        "status": "success",
-        "destination_name": destination_name,
-        "public_image_url": public_url,
-        "markdown_embed": markdown_embed,
-    }
+        return {
+            "status": "success",
+            "destination_name": destination_name,
+            "public_image_url": public_url,
+            "markdown_embed": markdown_embed,
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Image generation unavailable: {e}"}

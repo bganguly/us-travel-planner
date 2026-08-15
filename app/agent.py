@@ -22,7 +22,6 @@ from google.adk.agents.callback_context import CallbackContext
 from google.adk.apps import App
 from google.adk.code_executors import AgentEngineSandboxCodeExecutor
 from google.adk.models import Gemini
-from google.adk.tools.preload_memory_tool import PreloadMemoryTool
 from google.genai import types
 
 
@@ -87,8 +86,6 @@ root_agent = Agent(
         "- generate_destination_image: generate a scenic postcard image for an itinerary stop\n"
         "- generate_domain_item_image: photo-realistic image of a motorcycle, landmark, or travel item\n"
         "\n"
-        "Use PreloadMemoryTool at the start of every session to recall the user's stated preferences, "
-        "budget, and riding experience from past conversations."
     ),
     code_executor=AgentEngineSandboxCodeExecutor(
         agent_engine_resource_name=REASONING_ENGINE_RESOURCE
@@ -102,9 +99,7 @@ root_agent = Agent(
         calculate_trip_budget,
         get_scenic_route_highlights,
         generate_destination_image,
-        PreloadMemoryTool(),
     ],
-    after_agent_callback=generate_memories_callback,
 )
 
 app = App(
