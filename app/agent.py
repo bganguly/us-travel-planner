@@ -25,7 +25,6 @@ from google.adk.models import Gemini
 from google.adk.tools.preload_memory_tool import PreloadMemoryTool
 from google.genai import types
 
-from app.app_utils.services import get_memory_service
 
 
 def _resolve_reasoning_engine_resource() -> str:
@@ -113,5 +112,4 @@ root_agent = Agent(
 app = App(
     root_agent=root_agent,
     name="app",
-    memory_service=get_memory_service(),
 )
