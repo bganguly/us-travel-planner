@@ -19,7 +19,7 @@ from google.genai import types
 if TYPE_CHECKING:
     from google.adk.agents.callback_context import CallbackContext
 
-_CLASSIFIER_MODEL = "gemini-2.0-flash"
+_CLASSIFIER_MODEL = "gemini-2.5-flash"
 
 _ALLOWED_TOPICS = (
     "US travel planning, road trips, motorcycle routes, national parks, "

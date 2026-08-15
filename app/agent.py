@@ -104,7 +104,6 @@ root_agent = Agent(
         generate_destination_image,
         PreloadMemoryTool(),
     ],
-    before_agent_callback=topic_guard_callback,
     after_agent_callback=generate_memories_callback,
 )
 
