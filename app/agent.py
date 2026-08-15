@@ -48,6 +48,7 @@ async def generate_memories_callback(callback_context: CallbackContext):
     return None
 
 
+from app.app_utils.topic_guard import topic_guard_callback
 from app.app_utils.firestore_tools import (
     add_or_update_motorcycle_rental,
     get_motorcycle_rental,
@@ -103,6 +104,7 @@ root_agent = Agent(
         generate_destination_image,
         PreloadMemoryTool(),
     ],
+    before_agent_callback=topic_guard_callback,
     after_agent_callback=generate_memories_callback,
 )
 
